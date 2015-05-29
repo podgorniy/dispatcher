@@ -1,0 +1,31 @@
+{
+  "name": "flower",
+  "version": "0.0.1",
+  "description": "Tool for controlling module interactions flow",
+  "main": "./lib/flower.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+  },
+  "devDependencies": {
+    "jasmine-core": "^2.3.4",
+    "karma": "^0.12.31",
+    "karma-commonjs": "0.0.13",
+    "karma-coverage": "^0.3.1"
+  },
+  "scripts": {
+    "build": "uglifyjs -c -m --screw-ie8 ./lib/flower.js > ./dist/flower.min.js",
+    "test": "karma start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/podgorniy/flower.git"
+  },
+  "author": "Dmitry Podgonriy",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/podgorniy/flower/issues"
+  },
+  "homepage": "https://github.com/podgorniy/flower"
+}
