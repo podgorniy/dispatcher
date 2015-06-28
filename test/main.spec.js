@@ -32,47 +32,6 @@ describe('Flower test suite', function () {
 		expect(a).toBe(context)
 	})
 
-	it('Support subscription to latest triggered event', function (done) {
-		var a = 10
-		flower.on(true, 'eventName', function (eventData) {
-			a = eventData
-		})
-		flower.trigger('eventName', 100)
-		expect(a).toBe(10)
-		flower.trigger('eventName', 200)
-		setTimeout(function () {
-			expect(a).toBe(200)
-			done()
-		}, 50)
-	})
-
-	it('Supports subscription with immediate invocation', function () {
-		var a = 10
-		flower.trigger('eventName', 100)
-		flower.on('eventName', function (eventData) {
-			a = eventData
-		}, true)
-		expect(a).toBe(100)
-		flower.trigger('eventName', 200)
-		expect(a).toBe(200)
-	})
-
-	it('Supports subscription with immediate invocation and context', function () {
-		var a = 10
-		var b = null
-		var context = {}
-		flower.trigger('eventName', 100)
-		flower.on('eventName', function (eventData) {
-			a = eventData
-			b = this
-		}, context, true)
-		expect(a).toBe(100)
-		expect(b).toBe(context)
-		flower.trigger('eventName', 200)
-		expect(a).toBe(200)
-		expect(b).toBe(context)
-	})
-
 	it('Supports subscription with multiple events, space or coma separated', function () {
 		var a = 10
 		flower.on('event1 event2  event3 , event4', function () {
@@ -178,25 +137,6 @@ describe('Flower test suite', function () {
 		}, 100)
 	})
 
-	it('Allows to react only to latest triggerer among multiples', function (done) {
-		var a = 10
-		var b = 10
-		flower.on(true, 'eventName', function (eventData) {
-			a = eventData
-		})
-		flower.on(true, 'eventName', function (eventData) {
-			b = eventData
-		})
-		flower.trigger('eventName', 20)
-		flower.trigger('eventName', 30)
-		expect(b).toEqual(10) // callback was not called
-		setTimeout(function () {
-			expect(a).toEqual(30)
-			expect(b).toEqual(30)
-			done()
-		}, 100)
-	})
-
 	it('Latest triggerer plays fine with planned trigger executors', function (done) {
 		var a = 10
 		var test = {
@@ -204,7 +144,7 @@ describe('Flower test suite', function () {
 			}
 		}
 		spyOn(test, 'cb')
-		flower.on(true, 'eventName', function (data) {
+		flower.onWithRAF('eventName', function (data) {
 			test.cb()
 			a = data
 		})
@@ -224,12 +164,12 @@ describe('Flower test suite', function () {
 		var a = 10
 		var b = 10
 		flower.trigger(true, 'eventName')
-		flower.on('eventName', function () {
+		flower.onWithRAF('eventName', function () {
 			a += 10
 		}, true)
-		flower.on(true, 'eventName', function () {
+		flower.onWithPastAndRAF('eventName', function () {
 			b += 10
-		}, true)
+		})
 		flower.trigger(true, 'eventName')
 		setTimeout(function () {
 			expect(a).toBe(20)
@@ -294,7 +234,7 @@ describe('Flower test suite', function () {
 		var callback = function () {
 			a = 20
 		}
-		flower.on(true, 'eventName', callback)
+		flower.onWithRAF('eventName', callback)
 		flower.off(true, 'eventName', callback)
 		flower.trigger('eventName')
 		setTimeout(function () {
@@ -309,7 +249,7 @@ describe('Flower test suite', function () {
 			a = 20
 		}
 		var context = {}
-		flower.on(true, 'eventName', callback, context)
+		flower.onWithRAF('eventName', callback, context)
 		flower.off(true, 'eventName', context)
 		flower.trigger('eventName')
 		setTimeout(function () {
@@ -323,11 +263,11 @@ describe('Flower test suite', function () {
 		var callbackToUnsubscribe = function () {
 			a = 20
 		}
-		flower.on(true, 'eventName', function () {
+		flower.onWithRAF('eventName', function () {
 			a = 40
 		})
-		flower.on(true, 'eventName', callbackToUnsubscribe)
-		flower.on(true, 'eventName', function () {
+		flower.onWithRAF('eventName', callbackToUnsubscribe)
+		flower.onWithRAF('eventName', function () {
 			a = 40
 		})
 		flower.off(true, 'eventName', callbackToUnsubscribe)
@@ -339,25 +279,29 @@ describe('Flower test suite', function () {
 	})
 
 	it('Unsubscribe from latest triggered event handler by context', function (done) {
-		var a = 10
+		var a = 0
 		var b = 10
 		var context = {}
-		flower.on(true, 'eventName', function () {
-			a = 30
-		})
-		flower.on(true, 'eventName', function () {
+		flower.onWithRAF('eventName', function () {
+			a = 10
+		}, context)
+		flower.on('eventName', function () {
 			a = 20
 			b = 20
 		}, context)
-		flower.on(true, 'eventName', function () {
+		flower.on('eventName', function () {
 			a = 30
 		})
 		flower.off(true, 'eventName', context)
 		flower.trigger('eventName')
 		setTimeout(function () {
-			expect(b).toBe(10)
-			expect(a).toBe(30)
-			done();
+			expect(b).toBe(20)
+			flower.off('eventName', context)
+			flower.trigger('eventName')
+			setTimeout(function () {
+				expect(a).toBe(30)
+				done();
+			}, 30)
 		}, 100)
 	})
 
