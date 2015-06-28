@@ -1,7 +1,9 @@
 Flower: makes things work together 
 
 #Rationale
-Flower targets simplifying development and support of module interactions by following ideas:
+
+Managing events in large systems sucks. Flower makes this problem less noticable. Flower targets simplifying development
+and support of module interactions by following ideas:
 
   - Modules should know nothing about each other. Modules describe only requirements and reactions on events.
   - Events used for "push" model data flow, when data consumed by subscribers. 
@@ -12,38 +14,19 @@ Flower targets simplifying development and support of module interactions by fol
 
 #API
 
-##flower.on(eventName, handler)
-Simple as events in javascript. Will execure `handler` when event with `eventName` will be triggered.
+##flower.on(eventName, handler [, context])
+Will execute `handler` when event with `eventName` will be triggered. Optional parameter `context` will be used as `this` during
+`handler` invocation.
 
 ```
 var flower = new Flower()
-flower.on('event', function () {
-    console.log('event triggered')
-})
-flower.trigger('event'); // log: 'event triggered'
-flower.trigger('event'); // log: 'event triggered'
+var handlerContext = {user: 'Fred'}
+flower.on('event', function (eventData) {
+    console.log(this) // {user: 'Fred'}
+    console.log(eventData) // 100500
+}, handlerContext)
+flower.trigger('event', 100500);
 ```
-
-##flower.on(true, eventName, handler)
-Will execute `handler` once after at least one trigger of event `eventName`, but execute `handler` only once, regardless how many
-times event `eventName` was triggered between two `requestAnimationFrame` occurances (about 16ms in ideal situation). Execution is
-done inside `requestAnimationFrame`. You would like to use this kind of scubscription in some view, that subscribes to data, that 
-  changes more frequently, that page renders.
-  
-```
-var flower = new Flower()
-flower.on(true, 'event', function () {
-    console.log('event triggered')
-})
-flower.trigger('event')
-flower.trigger('event')
-// After short timeout log: 'event triggered'
-```
-
-##flower.on(eventName, handler, context)
-Will subscribe  as usual event, but will execute handler with `this` equals `context`. Also allows to ubsubscribe from event by `context`.
-You would like to use this kind of subscription to provide correct context for method of a class, and allow to unsubscribe all
-handlers of the class, when class is destroyed
 
 ```
 var cat = {
@@ -68,42 +51,45 @@ flower.trigger('showFood')
 
 Now unsubscribe all `cat` handlers from event `'showFood'`, trigger event, and see, that only `dog` reacts on an action.
 
+
 ```
 flower.off('showFood', cat)
 flower.trigger('showFood')
 // log: Dog says bark
 ```
 
-##flower.on(eventName, handler, true)
-Will subscribe `handler` to event `eventName` and will execute handler if event `'eventName'` already was triggered. You might want this
-subscription for views, that initialize after models, or when you don't want to maintain modules initialization explicitly.
-
+##flower.onWithRAF(eventName, handler [, context])
+Will execute `handler` once after at least one trigger of event `eventName`. `handler` will be executed latest event data, provided by `trigger` method,
+regardless how many times event `eventName` was triggered between two `requestAnimationFrame` occurances (about 16ms in ideal situation). Execution is
+done inside `requestAnimationFrame`. You would like to use this kind of subscription in some view, that subscribes to data, that
+changes more frequently, that page renders.
+  
 ```
 var flower = new Flower()
-flower.trigger('event')
-setTimeout(function () {
-    flower.on('event', function () {
-        console.log('event triggered')
-    }, true) // log: event triggered
-    flower.trigger('event') // log: event triggered
-}, 1000)
+flower.onWithRAF('event', function (eventData) {
+    console.log('event triggered', eventData)
+})
+flower.trigger('event', 100500)
+flower.trigger('event', 200600)
+// After short timeout log: 'event triggered', 200600
 ```
 
+##flower.onWithPast(eventName, handler [, context])
+Works like '.on', but executes `handler` (with `this` equals optional `context`) if event `eventName` was already triggered
+ 
 ```
 var flower = new Flower()
-
-// module Connection
-flower.trigger('connection:ready')
-
-// module User
-flower.on('connection:ready', function () {
-    authenticateUser()
-}, true)
+flower.trigger('event', 'uno')
+flower.onWithPast('event', function (eventData) {
+    console.log(eventData) // "uno"
+})
+flower.trigger('event', 'tuo'); // "tuo"
 ```
 
-##flower.on(true, eventName, handler, context, true)
-Executes handler with `this` equals `context`. Executes `handler` if event `'eventName'` was already triggered. Allows callback
-to be executed only once per `requestAnimationFrame` (about 16ms). Allows to unsubscribe by `context` without having reference to `handler`
+##flower.onWithRAFAndPast(eventName, handler [, context])
+##flower.onWithPastAndRAF(eventName, handler [, context])
+Two equal methods. Triggers `handler` with this equals optional `context`, if event `eventName` was already triggered,
+and continue triggering handler not more, than once in a `requestAnimationFrame` interval. 
 
 
 ##flower.trigger(eventName, data)

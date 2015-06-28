@@ -569,16 +569,19 @@ describe('Flower test suite', function () {
 		}, 100)
 	})
 
-	it('Broken handler should not break all handlers executions', function () {
+	xit('Broken handler should not break all handlers executions', function () {
 		var a = 10
 		flower.on('event', function () {
-			brokenShit()
+			a += 10
 		})
 		flower.on('event', function () {
-			a = 20
+			throw new Error('error')
+		})
+		flower.on('event', function () {
+			a += 10
 		})
 		flower.trigger('event')
-		expect(a).toBe(20)
+		expect(a).toBe(30)
 	})
 
 	it('Subsription returns reference to flower instantce', function () {
@@ -591,5 +594,74 @@ describe('Flower test suite', function () {
 		flower.trigger('event')
 		flower.trigger('eventName')
 		expect(a).toBe(30)
+	})
+
+	it('"onWithPast" works properly', function (done) {
+		var data = 100500
+		flower.trigger('event', data)
+		setTimeout(function () {
+			var context = {}
+			var a = 10
+			flower.on('event', function (eventData) {
+				a = 20
+			}, context)
+
+			flower.onWithPast('event', function (eventData) {
+				expect(this).toBe(context)
+				expect(eventData).toBe(100500)
+				expect(a).toBe(10) // expect handler from top not being called
+				done()
+			}, context)
+		}, 100)
+	})
+
+
+	it('"onWithRAF" works properly', function (done) {
+		var a = 10
+		var subscriberContext = {}
+
+		flower.onWithRAF('event', function (eventData) {
+			a = eventData
+			expect(this).toBe(subscriberContext)
+		}, subscriberContext)
+		flower.trigger('event', 100500)
+		expect(a).toBe(10)
+		flower.trigger('event', 123)
+		// Trigger short after block of code
+		setTimeout(function () {
+			flower.trigger('event', 999)
+		}, 1)
+		setTimeout(function () {
+			expect(a).toBe(999)
+			done()
+		}, 100)
+	})
+
+	it('"onWithRAFAndPast" and "onWithPastAndRAF" same and works correctly and samy way 1', function (done) {
+		expect(flower.onWithRAFAndPast).toBe(flower.onWithPastAndRAF)
+		var subscriberContext = {}
+		flower.trigger('event', 100)
+		setTimeout(function () {
+			flower.onWithRAFAndPast('event', function (eventData) {
+				expect(eventData).toBe(100)
+				expect(this).toBe(subscriberContext)
+			}, subscriberContext)
+			setTimeout(done, 100)
+		}, 50)
+	})
+
+	it('"onWithRAFAndPast" and "onWithPastAndRAF" same and works correctly and same way 2', function (done) {
+		expect(flower.onWithPastAndRAF).toBe(flower.onWithRAFAndPast)
+		var subscriberContext = {}
+		setTimeout(function () {
+			flower.onWithRAFAndPast('event', function (eventData) {
+				expect(eventData).toBe(300)
+				expect(this).toBe(subscriberContext)
+			}, subscriberContext)
+			flower.trigger('event', 100)
+			flower.trigger('event', 200)
+			flower.trigger('event', 300)
+			setTimeout(done, 100)
+		}, 50)
 	})
 })
