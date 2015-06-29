@@ -144,7 +144,7 @@ describe('Flower test suite', function () {
 			}
 		}
 		spyOn(test, 'cb')
-		flower.onWithRAF('eventName', function (data) {
+		flower.subscribeThrottled('eventName', function (data) {
 			test.cb()
 			a = data
 		})
@@ -164,10 +164,10 @@ describe('Flower test suite', function () {
 		var a = 10
 		var b = 10
 		flower.trigger(true, 'eventName')
-		flower.onWithRAF('eventName', function () {
+		flower.subscribeThrottled('eventName', function () {
 			a += 10
 		}, true)
-		flower.onWithPastAndRAF('eventName', function () {
+		flower.subscribeDebounced('eventName', function () {
 			b += 10
 		})
 		flower.trigger(true, 'eventName')
@@ -234,7 +234,7 @@ describe('Flower test suite', function () {
 		var callback = function () {
 			a = 20
 		}
-		flower.onWithRAF('eventName', callback)
+		flower.subscribeThrottled('eventName', callback)
 		flower.off(true, 'eventName', callback)
 		flower.trigger('eventName')
 		setTimeout(function () {
@@ -249,7 +249,7 @@ describe('Flower test suite', function () {
 			a = 20
 		}
 		var context = {}
-		flower.onWithRAF('eventName', callback, context)
+		flower.subscribeThrottled('eventName', callback, context)
 		flower.off(true, 'eventName', context)
 		flower.trigger('eventName')
 		setTimeout(function () {
@@ -263,11 +263,11 @@ describe('Flower test suite', function () {
 		var callbackToUnsubscribe = function () {
 			a = 20
 		}
-		flower.onWithRAF('eventName', function () {
+		flower.subscribeThrottled('eventName', function () {
 			a = 40
 		})
-		flower.onWithRAF('eventName', callbackToUnsubscribe)
-		flower.onWithRAF('eventName', function () {
+		flower.subscribeThrottled('eventName', callbackToUnsubscribe)
+		flower.subscribeThrottled('eventName', function () {
 			a = 40
 		})
 		flower.off(true, 'eventName', callbackToUnsubscribe)
@@ -282,7 +282,7 @@ describe('Flower test suite', function () {
 		var a = 0
 		var b = 10
 		var context = {}
-		flower.onWithRAF('eventName', function () {
+		flower.subscribeThrottled('eventName', function () {
 			a = 10
 		}, context)
 		flower.subscribe('eventName', function () {
@@ -560,11 +560,11 @@ describe('Flower test suite', function () {
 	})
 
 
-	it('"onWithRAF" works properly', function (done) {
+	it('"subscribeThrottled" works properly', function (done) {
 		var a = 10
 		var subscriberContext = {}
 
-		flower.onWithRAF('event', function (eventData) {
+		flower.subscribeThrottled('event', function (eventData) {
 			a = eventData
 			expect(this).toBe(subscriberContext)
 		}, subscriberContext)
@@ -581,12 +581,11 @@ describe('Flower test suite', function () {
 		}, 100)
 	})
 
-	it('"onWithRAFAndPast" and "onWithPastAndRAF" same and works correctly and samy way 1', function (done) {
-		expect(flower.onWithRAFAndPast).toBe(flower.onWithPastAndRAF)
+	it('"subscribeDebounced" works correctly 1', function (done) {
 		var subscriberContext = {}
 		flower.trigger('event', 100)
 		setTimeout(function () {
-			flower.onWithRAFAndPast('event', function (eventData) {
+			flower.subscribeDebounced('event', function (eventData) {
 				expect(eventData).toBe(100)
 				expect(this).toBe(subscriberContext)
 			}, subscriberContext)
@@ -594,11 +593,10 @@ describe('Flower test suite', function () {
 		}, 50)
 	})
 
-	it('"onWithRAFAndPast" and "onWithPastAndRAF" same and works correctly and same way 2', function (done) {
-		expect(flower.onWithPastAndRAF).toBe(flower.onWithRAFAndPast)
+	it('"subscribeDebounced" works correctly 2', function (done) {
 		var subscriberContext = {}
 		setTimeout(function () {
-			flower.onWithRAFAndPast('event', function (eventData) {
+			flower.subscribeDebounced('event', function (eventData) {
 				expect(eventData).toBe(300)
 				expect(this).toBe(subscriberContext)
 			}, subscriberContext)
