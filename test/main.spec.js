@@ -10,12 +10,12 @@ describe('Flower test suite', function () {
 
 	it('Basic event usage', function () {
 		var a = 10
-		flower.on('event', function () {
+		flower.subscribe('event', function () {
 			a = 20
 		})
 		flower.trigger('event')
 		expect(a).toBe(20)
-		flower.on('event', function () {
+		flower.subscribe('event', function () {
 			a = 30
 		})
 		flower.trigger('event')
@@ -25,7 +25,7 @@ describe('Flower test suite', function () {
 	it('Supports subscription with context', function () {
 		var a = null
 		var context = {}
-		flower.on('eventName', function () {
+		flower.subscribe('eventName', function () {
 			a = this
 		}, context)
 		flower.trigger('eventName')
@@ -34,7 +34,7 @@ describe('Flower test suite', function () {
 
 	it('Supports subscription with multiple events, space or coma separated', function () {
 		var a = 10
-		flower.on('event1 event2  event3 , event4', function () {
+		flower.subscribe('event1 event2  event3 , event4', function () {
 			a += 10;
 		})
 		flower.trigger('event1')
@@ -46,12 +46,12 @@ describe('Flower test suite', function () {
 
 	it('Events with namespaces', function () {
 		var a = 10
-		flower.on('event:context1', function () {
+		flower.subscribe('event:context1', function () {
 			a = 20
 		})
 		flower.trigger('event:context1')
 		expect(a).toBe(20)
-		flower.on('event:context2', function () {
+		flower.subscribe('event:context2', function () {
 			a += 10
 		})
 		flower.trigger('event:context2')
@@ -61,7 +61,7 @@ describe('Flower test suite', function () {
 
 	it('Planned triggers executors', function (done) {
 		var a = 10
-		flower.on('event', function (data) {
+		flower.subscribe('event', function (data) {
 			a = data
 		})
 
@@ -106,7 +106,7 @@ describe('Flower test suite', function () {
 			}
 		}
 		spyOn(test, 'cb')
-		flower.on('eventName', test.cb)
+		flower.subscribe('eventName', test.cb)
 		flower.trigger(true, 'eventName')
 		expect(test.cb).not.toHaveBeenCalled()
 		flower.trigger('eventName')
@@ -181,10 +181,10 @@ describe('Flower test suite', function () {
 	it('Does not allow to unsubscribe from all handlers by eventName', function () {
 		var a = 10
 		var context = {}
-		flower.on('eventName', function () {
+		flower.subscribe('eventName', function () {
 			a += 10
 		}, context)
-		flower.on('eventName', function () {
+		flower.subscribe('eventName', function () {
 			a += 10
 		})
 		flower.off('eventName')
@@ -197,10 +197,10 @@ describe('Flower test suite', function () {
 		var handlerToUnsubscribe = function () {
 			a = 50
 		}
-		flower.on('eventName', function () {
+		flower.subscribe('eventName', function () {
 			a = 20
 		})
-		flower.on('eventName', handlerToUnsubscribe)
+		flower.subscribe('eventName', handlerToUnsubscribe)
 		flower.trigger('eventName')
 		expect(a).toBe(50)
 		flower.off('eventName', handlerToUnsubscribe)
@@ -212,10 +212,10 @@ describe('Flower test suite', function () {
 		var a = 10
 		var b = null
 		var context = {}
-		flower.on('eventName', function () {
+		flower.subscribe('eventName', function () {
 			a = 30
 		})
-		flower.on('eventName', function () {
+		flower.subscribe('eventName', function () {
 			a = 20
 			b = this
 		}, context)
@@ -285,11 +285,11 @@ describe('Flower test suite', function () {
 		flower.onWithRAF('eventName', function () {
 			a = 10
 		}, context)
-		flower.on('eventName', function () {
+		flower.subscribe('eventName', function () {
 			a = 20
 			b = 20
 		}, context)
-		flower.on('eventName', function () {
+		flower.subscribe('eventName', function () {
 			a = 30
 		})
 		flower.off(true, 'eventName', context)
@@ -312,9 +312,9 @@ describe('Flower test suite', function () {
 		var h1 = function () {a += 10;}
 		var h2 = function () {b += 10; flower.off('eventName', h1); flower.off('eventName', h2); flower.off('eventName', h3) }
 		var h3 = function () {c += 10;}
-		flower.on('eventName', h1)
-		flower.on('eventName', h2)
-		flower.on('eventName', h3)
+		flower.subscribe('eventName', h1)
+		flower.subscribe('eventName', h2)
+		flower.subscribe('eventName', h3)
 		flower.trigger('eventName')
 		expect(a).toBe(20)
 		expect(b).toBe(20)
@@ -332,11 +332,11 @@ describe('Flower test suite', function () {
 		var h1 = function () {a += 10;}
 		var h2 = function () {b += 10;}
 		var h3 = function () {c += 10;}
-		flower.on('eventName', h1)
-		flower.on('eventName', h2)
-		flower.on('eventName', h3)
-		flower.on('eventName', h1)
-		flower.on('eventName', h2)
+		flower.subscribe('eventName', h1)
+		flower.subscribe('eventName', h2)
+		flower.subscribe('eventName', h3)
+		flower.subscribe('eventName', h1)
+		flower.subscribe('eventName', h2)
 		flower.trigger('eventName')
 		expect(a).toBe(30)
 		expect(b).toBe(30)
@@ -356,9 +356,9 @@ describe('Flower test suite', function () {
 		var h1 = function () {a += 10;}
 		var h2 = function () {b += 10; flower.off('eventName', h2)}
 		var h3 = function () {c += 10;}
-		flower.on('eventName', h1)
-		flower.on('eventName', h2)
-		flower.on('eventName', h3)
+		flower.subscribe('eventName', h1)
+		flower.subscribe('eventName', h2)
+		flower.subscribe('eventName', h3)
 		flower.trigger('eventName')
 		expect(a).toBe(20)
 		expect(b).toBe(20)
@@ -373,10 +373,10 @@ describe('Flower test suite', function () {
 		var a = 10
 		var b = 10
 		var context = {}
-		flower.on('eventName', function () {
+		flower.subscribe('eventName', function () {
 			a = 20
 		})
-		flower.on('eventName', function () {
+		flower.subscribe('eventName', function () {
 			b += 10
 		}, context)
 		flower.trigger('eventName')
@@ -391,13 +391,13 @@ describe('Flower test suite', function () {
 	it('Unsubscribe requires either context or handler', function () {
 		var a = 10
 		var context = {}
-		flower.on('event', function () {
+		flower.subscribe('event', function () {
 			a += 10
 		})
-		flower.on('event', function () {
+		flower.subscribe('event', function () {
 			a += 10
 		}, context)
-		flower.on('event', function () {
+		flower.subscribe('event', function () {
 			a += 10
 		}, context, true)
 	})
@@ -515,13 +515,13 @@ describe('Flower test suite', function () {
 
 	xit('Broken handler should not break all handlers executions', function () {
 		var a = 10
-		flower.on('event', function () {
+		flower.subscribe('event', function () {
 			a += 10
 		})
-		flower.on('event', function () {
+		flower.subscribe('event', function () {
 			throw new Error('error')
 		})
-		flower.on('event', function () {
+		flower.subscribe('event', function () {
 			a += 10
 		})
 		flower.trigger('event')
@@ -530,9 +530,9 @@ describe('Flower test suite', function () {
 
 	it('Subsription returns reference to flower instantce', function () {
 		var a = 10
-		flower.on('event', function () {
+		flower.subscribe('event', function () {
 			a += 10
-		}).on('eventName', function () {
+		}).subscribe('eventName', function () {
 			a += 10
 		})
 		flower.trigger('event')
@@ -546,7 +546,7 @@ describe('Flower test suite', function () {
 		setTimeout(function () {
 			var context = {}
 			var a = 10
-			flower.on('event', function (eventData) {
+			flower.subscribe('event', function (eventData) {
 				a = 20
 			}, context)
 
