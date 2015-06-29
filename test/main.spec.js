@@ -540,7 +540,7 @@ describe('Flower test suite', function () {
 		expect(a).toBe(30)
 	})
 
-	it('"onWithPast" works properly', function (done) {
+	it('"subscribeWithPast" works properly', function (done) {
 		var data = 100500
 		flower.trigger('event', data)
 		setTimeout(function () {
@@ -550,7 +550,7 @@ describe('Flower test suite', function () {
 				a = 20
 			}, context)
 
-			flower.onWithPast('event', function (eventData) {
+			flower.subscribeWithPast('event', function (eventData) {
 				expect(this).toBe(context)
 				expect(eventData).toBe(100500)
 				expect(a).toBe(10) // expect handler from top not being called
