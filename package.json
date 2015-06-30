@@ -1,8 +1,8 @@
 {
-  "name": "flower",
+  "name": "dispatcher",
   "version": "0.0.1",
   "description": "Tool for controlling module interactions flow",
-  "main": "./lib/flower.js",
+  "main": "./lib/dispatcher.js",
   "directories": {
     "test": "test"
   },
@@ -15,17 +15,17 @@
     "karma-coverage": "^0.3.1"
   },
   "scripts": {
-    "build": "uglifyjs -c -m --screw-ie8 ./lib/flower.js > ./dist/flower.min.js",
+    "build": "uglifyjs -c -m --screw-ie8 ./lib/dispatcher.js > ./dist/dispatcher.min.js",
     "test": "karma start"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/podgorniy/flower.git"
+    "url": "https://github.com/podgorniy/dispatcher.git"
   },
   "author": "Dmitry Podgonriy",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/podgorniy/flower/issues"
+    "url": "https://github.com/podgorniy/dispatcher/issues"
   },
-  "homepage": "https://github.com/podgorniy/flower"
+  "homepage": "https://github.com/podgorniy/dispatcher"
 }

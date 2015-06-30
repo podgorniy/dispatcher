@@ -1,76 +1,76 @@
 'use strict'
 
-var Flower = require('../lib/flower').Flower
+var Dispatcher = require('../lib/dispatcher').Dispatcher
 
-describe('Flower test suite', function () {
-	var flower;
+describe('Dispatcher test suite', function () {
+	var dispatcher;
 	beforeEach(function () {
-		flower = new Flower();
+		dispatcher = new Dispatcher();
 	})
 
 	it('Basic event usage', function () {
 		var a = 10
-		flower.subscribe('event', function () {
+		dispatcher.subscribe('event', function () {
 			a = 20
 		})
-		flower.trigger('event')
+		dispatcher.trigger('event')
 		expect(a).toBe(20)
-		flower.subscribe('event', function () {
+		dispatcher.subscribe('event', function () {
 			a = 30
 		})
-		flower.trigger('event')
+		dispatcher.trigger('event')
 		expect(a).toBe(30)
 	})
 
 	it('Supports subscription with context', function () {
 		var a = null
 		var context = {}
-		flower.subscribe('eventName', function () {
+		dispatcher.subscribe('eventName', function () {
 			a = this
 		}, context)
-		flower.trigger('eventName')
+		dispatcher.trigger('eventName')
 		expect(a).toBe(context)
 	})
 
 	it('Supports subscription with multiple events, space or coma separated', function () {
 		var a = 10
-		flower.subscribe('event1 event2  event3 , event4', function () {
+		dispatcher.subscribe('event1 event2  event3 , event4', function () {
 			a += 10;
 		})
-		flower.trigger('event1')
-		flower.trigger('event2')
-		flower.trigger('event3')
-		flower.trigger('event4')
+		dispatcher.trigger('event1')
+		dispatcher.trigger('event2')
+		dispatcher.trigger('event3')
+		dispatcher.trigger('event4')
 		expect(a).toBe(50)
 	})
 
 	it('Events with namespaces', function () {
 		var a = 10
-		flower.subscribe('event:context1', function () {
+		dispatcher.subscribe('event:context1', function () {
 			a = 20
 		})
-		flower.trigger('event:context1')
+		dispatcher.trigger('event:context1')
 		expect(a).toBe(20)
-		flower.subscribe('event:context2', function () {
+		dispatcher.subscribe('event:context2', function () {
 			a += 10
 		})
-		flower.trigger('event:context2')
-		flower.trigger('event:context2')
+		dispatcher.trigger('event:context2')
+		dispatcher.trigger('event:context2')
 		expect(a).toBe(40)
 	})
 
 	it('Planned triggers executors', function (done) {
 		var a = 10
-		flower.subscribe('event', function (data) {
+		dispatcher.subscribe('event', function (data) {
 			a = data
 		})
 
-		flower.trigger(true, 'event', 10)
+		dispatcher.trigger(true, 'event', 10)
 		expect(a).toBe(10)
-		flower.trigger(true, 'event', 20)
+		dispatcher.trigger(true, 'event', 20)
 		expect(a).toBe(10)
-		flower.trigger('event', 100)
-		flower.trigger(true, 'event', 30)
+		dispatcher.trigger('event', 100)
+		dispatcher.trigger(true, 'event', 30)
 		expect(a).toBe(100)
 		setTimeout(function () {
 			expect(a).toBe(30)
@@ -82,14 +82,14 @@ describe('Flower test suite', function () {
 		var a = 10
 		var b = 10
 		var c = 10
-		flower.when('eventName').then(function (data) {
+		dispatcher.when('eventName').then(function (data) {
 			a += 10
 			b = data
 		})
-		flower.trigger(true, 'eventName', 10)
-		flower.trigger(true, 'eventName', 20)
-		flower.trigger(true, 'eventName', 30)
-		flower.when('eventName').then(function () {
+		dispatcher.trigger(true, 'eventName', 10)
+		dispatcher.trigger(true, 'eventName', 20)
+		dispatcher.trigger(true, 'eventName', 30)
+		dispatcher.when('eventName').then(function () {
 			c = 40
 		})
 		setTimeout(function () {
@@ -106,10 +106,10 @@ describe('Flower test suite', function () {
 			}
 		}
 		spyOn(test, 'cb')
-		flower.subscribe('eventName', test.cb)
-		flower.trigger(true, 'eventName')
+		dispatcher.subscribe('eventName', test.cb)
+		dispatcher.trigger(true, 'eventName')
 		expect(test.cb).not.toHaveBeenCalled()
-		flower.trigger('eventName')
+		dispatcher.trigger('eventName')
 		expect(test.cb.calls.count()).toEqual(1)
 		expect(test.cb).toHaveBeenCalled()
 		setTimeout(function () {
@@ -121,12 +121,12 @@ describe('Flower test suite', function () {
 	it('Basic promise-based events', function (done) {
 		var a = 10
 		var b = 10
-		flower.when('event').then(function () {
+		dispatcher.when('event').then(function () {
 			a = 20
 		})
-		flower.trigger('event')
+		dispatcher.trigger('event')
 		setTimeout(function () {
-			flower.when('event', true).then(function () {
+			dispatcher.when('event', true).then(function () {
 				b = 30
 			})
 		}, 0)
@@ -144,13 +144,13 @@ describe('Flower test suite', function () {
 			}
 		}
 		spyOn(test, 'cb')
-		flower.subscribeThrottled('eventName', function (data) {
+		dispatcher.subscribeThrottled('eventName', function (data) {
 			test.cb()
 			a = data
 		})
-		flower.trigger('eventName', 100500)
-		flower.trigger(true, 'eventName', 100)
-		flower.trigger('eventName', 100500)
+		dispatcher.trigger('eventName', 100500)
+		dispatcher.trigger(true, 'eventName', 100)
+		dispatcher.trigger('eventName', 100500)
 		expect(a).toBe(10)
 		expect(test.cb).not.toHaveBeenCalled()
 		setTimeout(function () {
@@ -163,14 +163,14 @@ describe('Flower test suite', function () {
 	it('Planned handler plays nicely with planned trigger', function (done) {
 		var a = 10
 		var b = 10
-		flower.trigger(true, 'eventName')
-		flower.subscribeThrottled('eventName', function () {
+		dispatcher.trigger(true, 'eventName')
+		dispatcher.subscribeThrottled('eventName', function () {
 			a += 10
 		}, true)
-		flower.subscribeDebounced('eventName', function () {
+		dispatcher.subscribeDebounced('eventName', function () {
 			b += 10
 		})
-		flower.trigger(true, 'eventName')
+		dispatcher.trigger(true, 'eventName')
 		setTimeout(function () {
 			expect(a).toBe(20)
 			expect(b).toBe(20)
@@ -181,14 +181,14 @@ describe('Flower test suite', function () {
 	it('Does not allow to unsubscribe from all handlers by eventName', function () {
 		var a = 10
 		var context = {}
-		flower.subscribe('eventName', function () {
+		dispatcher.subscribe('eventName', function () {
 			a += 10
 		}, context)
-		flower.subscribe('eventName', function () {
+		dispatcher.subscribe('eventName', function () {
 			a += 10
 		})
-		flower.off('eventName')
-		flower.trigger('eventName')
+		dispatcher.unsubscribe('eventName')
+		dispatcher.trigger('eventName')
 		expect(a).toBe(30)
 	})
 
@@ -197,14 +197,14 @@ describe('Flower test suite', function () {
 		var handlerToUnsubscribe = function () {
 			a = 50
 		}
-		flower.subscribe('eventName', function () {
+		dispatcher.subscribe('eventName', function () {
 			a = 20
 		})
-		flower.subscribe('eventName', handlerToUnsubscribe)
-		flower.trigger('eventName')
+		dispatcher.subscribe('eventName', handlerToUnsubscribe)
+		dispatcher.trigger('eventName')
 		expect(a).toBe(50)
-		flower.off('eventName', handlerToUnsubscribe)
-		flower.trigger('eventName')
+		dispatcher.unsubscribe('eventName', handlerToUnsubscribe)
+		dispatcher.trigger('eventName')
 		expect(a).toBe(20)
 	})
 
@@ -212,19 +212,19 @@ describe('Flower test suite', function () {
 		var a = 10
 		var b = null
 		var context = {}
-		flower.subscribe('eventName', function () {
+		dispatcher.subscribe('eventName', function () {
 			a = 30
 		})
-		flower.subscribe('eventName', function () {
+		dispatcher.subscribe('eventName', function () {
 			a = 20
 			b = this
 		}, context)
-		flower.trigger('eventName')
+		dispatcher.trigger('eventName')
 		expect(a).toBe(20)
 		expect(b).toBe(context)
-		flower.off('eventName', context)
+		dispatcher.unsubscribe('eventName', context)
 		b = null
-		flower.trigger('eventName')
+		dispatcher.trigger('eventName')
 		expect(a).toBe(30)
 		expect(b).toBe(null)
 	})
@@ -234,9 +234,9 @@ describe('Flower test suite', function () {
 		var callback = function () {
 			a = 20
 		}
-		flower.subscribeThrottled('eventName', callback)
-		flower.off(true, 'eventName', callback)
-		flower.trigger('eventName')
+		dispatcher.subscribeThrottled('eventName', callback)
+		dispatcher.unsubscribe(true, 'eventName', callback)
+		dispatcher.trigger('eventName')
 		setTimeout(function () {
 			expect(a).toBe(10)
 			done()
@@ -249,9 +249,9 @@ describe('Flower test suite', function () {
 			a = 20
 		}
 		var context = {}
-		flower.subscribeThrottled('eventName', callback, context)
-		flower.off(true, 'eventName', context)
-		flower.trigger('eventName')
+		dispatcher.subscribeThrottled('eventName', callback, context)
+		dispatcher.unsubscribe(true, 'eventName', context)
+		dispatcher.trigger('eventName')
 		setTimeout(function () {
 			expect(a).toBe(10)
 			done()
@@ -263,15 +263,15 @@ describe('Flower test suite', function () {
 		var callbackToUnsubscribe = function () {
 			a = 20
 		}
-		flower.subscribeThrottled('eventName', function () {
+		dispatcher.subscribeThrottled('eventName', function () {
 			a = 40
 		})
-		flower.subscribeThrottled('eventName', callbackToUnsubscribe)
-		flower.subscribeThrottled('eventName', function () {
+		dispatcher.subscribeThrottled('eventName', callbackToUnsubscribe)
+		dispatcher.subscribeThrottled('eventName', function () {
 			a = 40
 		})
-		flower.off(true, 'eventName', callbackToUnsubscribe)
-		flower.trigger('eventName')
+		dispatcher.unsubscribe(true, 'eventName', callbackToUnsubscribe)
+		dispatcher.trigger('eventName')
 		setTimeout(function () {
 			expect(a).toBe(40)
 			done()
@@ -282,22 +282,22 @@ describe('Flower test suite', function () {
 		var a = 0
 		var b = 10
 		var context = {}
-		flower.subscribeThrottled('eventName', function () {
+		dispatcher.subscribeThrottled('eventName', function () {
 			a = 10
 		}, context)
-		flower.subscribe('eventName', function () {
+		dispatcher.subscribe('eventName', function () {
 			a = 20
 			b = 20
 		}, context)
-		flower.subscribe('eventName', function () {
+		dispatcher.subscribe('eventName', function () {
 			a = 30
 		})
-		flower.off(true, 'eventName', context)
-		flower.trigger('eventName')
+		dispatcher.unsubscribe(true, 'eventName', context)
+		dispatcher.trigger('eventName')
 		setTimeout(function () {
 			expect(b).toBe(20)
-			flower.off('eventName', context)
-			flower.trigger('eventName')
+			dispatcher.unsubscribe('eventName', context)
+			dispatcher.trigger('eventName')
 			setTimeout(function () {
 				expect(a).toBe(30)
 				done();
@@ -310,16 +310,16 @@ describe('Flower test suite', function () {
 		var b = 10
 		var c = 10
 		var h1 = function () {a += 10;}
-		var h2 = function () {b += 10; flower.off('eventName', h1); flower.off('eventName', h2); flower.off('eventName', h3) }
+		var h2 = function () {b += 10; dispatcher.unsubscribe('eventName', h1); dispatcher.unsubscribe('eventName', h2); dispatcher.unsubscribe('eventName', h3) }
 		var h3 = function () {c += 10;}
-		flower.subscribe('eventName', h1)
-		flower.subscribe('eventName', h2)
-		flower.subscribe('eventName', h3)
-		flower.trigger('eventName')
+		dispatcher.subscribe('eventName', h1)
+		dispatcher.subscribe('eventName', h2)
+		dispatcher.subscribe('eventName', h3)
+		dispatcher.trigger('eventName')
 		expect(a).toBe(20)
 		expect(b).toBe(20)
 		expect(c).toBe(10)
-		flower.trigger('eventName')
+		dispatcher.trigger('eventName')
 		expect(a).toBe(20)
 		expect(b).toBe(20)
 		expect(c).toBe(10)
@@ -332,18 +332,18 @@ describe('Flower test suite', function () {
 		var h1 = function () {a += 10;}
 		var h2 = function () {b += 10;}
 		var h3 = function () {c += 10;}
-		flower.subscribe('eventName', h1)
-		flower.subscribe('eventName', h2)
-		flower.subscribe('eventName', h3)
-		flower.subscribe('eventName', h1)
-		flower.subscribe('eventName', h2)
-		flower.trigger('eventName')
+		dispatcher.subscribe('eventName', h1)
+		dispatcher.subscribe('eventName', h2)
+		dispatcher.subscribe('eventName', h3)
+		dispatcher.subscribe('eventName', h1)
+		dispatcher.subscribe('eventName', h2)
+		dispatcher.trigger('eventName')
 		expect(a).toBe(30)
 		expect(b).toBe(30)
 		expect(c).toBe(20)
-		flower.off('eventName', h1)
-		flower.off('eventName', h2)
-		flower.trigger('eventName')
+		dispatcher.unsubscribe('eventName', h1)
+		dispatcher.unsubscribe('eventName', h2)
+		dispatcher.trigger('eventName')
 		expect(a).toBe(30)
 		expect(b).toBe(30)
 		expect(c).toBe(30)
@@ -354,16 +354,16 @@ describe('Flower test suite', function () {
 		var b = 10
 		var c = 10
 		var h1 = function () {a += 10;}
-		var h2 = function () {b += 10; flower.off('eventName', h2)}
+		var h2 = function () {b += 10; dispatcher.unsubscribe('eventName', h2)}
 		var h3 = function () {c += 10;}
-		flower.subscribe('eventName', h1)
-		flower.subscribe('eventName', h2)
-		flower.subscribe('eventName', h3)
-		flower.trigger('eventName')
+		dispatcher.subscribe('eventName', h1)
+		dispatcher.subscribe('eventName', h2)
+		dispatcher.subscribe('eventName', h3)
+		dispatcher.trigger('eventName')
 		expect(a).toBe(20)
 		expect(b).toBe(20)
 		expect(c).toBe(20)
-		flower.trigger('eventName')
+		dispatcher.trigger('eventName')
 		expect(a).toBe(30)
 		expect(b).toBe(20)
 		expect(c).toBe(30)
@@ -373,17 +373,17 @@ describe('Flower test suite', function () {
 		var a = 10
 		var b = 10
 		var context = {}
-		flower.subscribe('eventName', function () {
+		dispatcher.subscribe('eventName', function () {
 			a = 20
 		})
-		flower.subscribe('eventName', function () {
+		dispatcher.subscribe('eventName', function () {
 			b += 10
 		}, context)
-		flower.trigger('eventName')
+		dispatcher.trigger('eventName')
 		expect(a).toBe(20)
 		expect(b).toBe(20)
-		flower.off('eventName', context)
-		flower.trigger('eventName')
+		dispatcher.unsubscribe('eventName', context)
+		dispatcher.trigger('eventName')
 		expect(a).toBe(20)
 		expect(b).toBe(20)
 	})
@@ -391,23 +391,23 @@ describe('Flower test suite', function () {
 	it('Unsubscribe requires either context or handler', function () {
 		var a = 10
 		var context = {}
-		flower.subscribe('event', function () {
+		dispatcher.subscribe('event', function () {
 			a += 10
 		})
-		flower.subscribe('event', function () {
+		dispatcher.subscribe('event', function () {
 			a += 10
 		}, context)
-		flower.subscribe('event', function () {
+		dispatcher.subscribe('event', function () {
 			a += 10
 		}, context, true)
 	})
 
 	it('Implements basic provider functionality', function (done) {
 		var requestResult
-		flower.provide('dataContext', function () {
+		dispatcher.provide('dataContext', function () {
 			return 100500
 		})
-		flower.request('dataContext').then(function (data) {
+		dispatcher.request('dataContext').then(function (data) {
 			requestResult = data
 		})
 		setTimeout(function () {
@@ -418,11 +418,11 @@ describe('Flower test suite', function () {
 
 	it('Allows to request data, before it\'s provided', function (done) {
 		var requestResult
-		flower.request('dataContext').then(function (data) {
+		dispatcher.request('dataContext').then(function (data) {
 			requestResult = data
 		})
 		setTimeout(function () {
-			flower.provide('dataContext', function () {
+			dispatcher.provide('dataContext', function () {
 				return 100500
 			})
 		}, 50)
@@ -435,10 +435,10 @@ describe('Flower test suite', function () {
 	it('Allows to pass parameters with request', function (done) {
 		var a
 		var b
-		flower.request('data', 50).then(function (resp) {
+		dispatcher.request('data', 50).then(function (resp) {
 			a = resp
 		})
-		flower.provide('data', function (param) {
+		dispatcher.provide('data', function (param) {
 			if (param === 50) {
 				return 'fifty'
 			}
@@ -446,7 +446,7 @@ describe('Flower test suite', function () {
 				return 'sixty'
 			}
 		})
-		flower.request('data', 60).then(function (resp) {
+		dispatcher.request('data', 60).then(function (resp) {
 			b = resp
 		})
 		setTimeout(function () {
@@ -458,10 +458,10 @@ describe('Flower test suite', function () {
 
 	it('Allows to pass arguments and function-callback with request', function (done) {
 		var a = 10
-		flower.request('data', function (data) {
+		dispatcher.request('data', function (data) {
 			a = data
 		})
-		flower.provide('data', function () {
+		dispatcher.provide('data', function () {
 			return 20
 		})
 		setTimeout(function () {
@@ -471,22 +471,22 @@ describe('Flower test suite', function () {
 	})
 
 	it('Does not allow 2 providers for same namespace', function () {
-		flower.provide('data', function () {})
+		dispatcher.provide('data', function () {})
 		expect(function () {
-			flower.provide('data', function () {})
+			dispatcher.provide('data', function () {})
 		}).toThrowError()
 	})
 
 	it('Allows to stop providing data', function (done) {
-		flower.provide('data', function () {
+		dispatcher.provide('data', function () {
 			return 10
 		})
-		flower.request('data').then(function (data) {
+		dispatcher.request('data').then(function (data) {
 			expect(data).toEqual(10)
 		})
-		flower.stopProviding('data')
+		dispatcher.stopProviding('data')
 		var promiseSullFilled = false
-		var requestAfterStopProviding = flower.request('data').then(function () {
+		var requestAfterStopProviding = dispatcher.request('data').then(function () {
 			promiseSullFilled = true
 		})
 		setTimeout(function () {
@@ -497,10 +497,10 @@ describe('Flower test suite', function () {
 
 	it('Provider may return Promise', function (done) {
 		var a
-		flower.request('data').then(function (data) {
+		dispatcher.request('data').then(function (data) {
 			a = data
 		})
-		flower.provide('data', function () {
+		dispatcher.provide('data', function () {
 			return new Promise(function (resolve) {
 				setTimeout(function () {
 					resolve(100500)
@@ -515,42 +515,42 @@ describe('Flower test suite', function () {
 
 	xit('Broken handler should not break all handlers executions', function () {
 		var a = 10
-		flower.subscribe('event', function () {
+		dispatcher.subscribe('event', function () {
 			a += 10
 		})
-		flower.subscribe('event', function () {
+		dispatcher.subscribe('event', function () {
 			throw new Error('error')
 		})
-		flower.subscribe('event', function () {
+		dispatcher.subscribe('event', function () {
 			a += 10
 		})
-		flower.trigger('event')
+		dispatcher.trigger('event')
 		expect(a).toBe(30)
 	})
 
-	it('Subsription returns reference to flower instantce', function () {
+	it('Subsription returns reference to dispatcher instantce', function () {
 		var a = 10
-		flower.subscribe('event', function () {
+		dispatcher.subscribe('event', function () {
 			a += 10
 		}).subscribe('eventName', function () {
 			a += 10
 		})
-		flower.trigger('event')
-		flower.trigger('eventName')
+		dispatcher.trigger('event')
+		dispatcher.trigger('eventName')
 		expect(a).toBe(30)
 	})
 
 	it('"subscribeWithPast" works properly', function (done) {
 		var data = 100500
-		flower.trigger('event', data)
+		dispatcher.trigger('event', data)
 		setTimeout(function () {
 			var context = {}
 			var a = 10
-			flower.subscribe('event', function (eventData) {
+			dispatcher.subscribe('event', function (eventData) {
 				a = 20
 			}, context)
 
-			flower.subscribeWithPast('event', function (eventData) {
+			dispatcher.subscribeWithPast('event', function (eventData) {
 				expect(this).toBe(context)
 				expect(eventData).toBe(100500)
 				expect(a).toBe(10) // expect handler from top not being called
@@ -564,16 +564,16 @@ describe('Flower test suite', function () {
 		var a = 10
 		var subscriberContext = {}
 
-		flower.subscribeThrottled('event', function (eventData) {
+		dispatcher.subscribeThrottled('event', function (eventData) {
 			a = eventData
 			expect(this).toBe(subscriberContext)
 		}, subscriberContext)
-		flower.trigger('event', 100500)
+		dispatcher.trigger('event', 100500)
 		expect(a).toBe(10)
-		flower.trigger('event', 123)
+		dispatcher.trigger('event', 123)
 		// Trigger short after block of code
 		setTimeout(function () {
-			flower.trigger('event', 999)
+			dispatcher.trigger('event', 999)
 		}, 1)
 		setTimeout(function () {
 			expect(a).toBe(999)
@@ -583,9 +583,9 @@ describe('Flower test suite', function () {
 
 	it('"subscribeDebounced" works correctly 1', function (done) {
 		var subscriberContext = {}
-		flower.trigger('event', 100)
+		dispatcher.trigger('event', 100)
 		setTimeout(function () {
-			flower.subscribeDebounced('event', function (eventData) {
+			dispatcher.subscribeDebounced('event', function (eventData) {
 				expect(eventData).toBe(100)
 				expect(this).toBe(subscriberContext)
 			}, subscriberContext)
@@ -596,13 +596,13 @@ describe('Flower test suite', function () {
 	it('"subscribeDebounced" works correctly 2', function (done) {
 		var subscriberContext = {}
 		setTimeout(function () {
-			flower.subscribeDebounced('event', function (eventData) {
+			dispatcher.subscribeDebounced('event', function (eventData) {
 				expect(eventData).toBe(300)
 				expect(this).toBe(subscriberContext)
 			}, subscriberContext)
-			flower.trigger('event', 100)
-			flower.trigger('event', 200)
-			flower.trigger('event', 300)
+			dispatcher.trigger('event', 100)
+			dispatcher.trigger('event', 200)
+			dispatcher.trigger('event', 300)
 			setTimeout(done, 100)
 		}, 50)
 	})
