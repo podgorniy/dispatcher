@@ -1,6 +1,6 @@
 dispatcher: makes things work together 
 
-#Rationale
+# Rationale
 
 Managing events in large systems sucks. dispatcher makes this problem less noticable. dispatcher targets simplifying development
 and support of module interactions by following ideas:
@@ -12,9 +12,9 @@ and support of module interactions by following ideas:
   - Performance optimisations available could be done by both consumer and triggerer.
 
 
-#API
+# API
 
-##dispatcher.subscribe(eventName, handler [, context])
+## dispatcher.subscribe(eventName, handler [, context])
 Will execute `handler` when event with `eventName` will be triggered. Optional parameter `context` will be used as `this` during
 `handler` invocation.
 
@@ -58,7 +58,7 @@ dispatcher.trigger('showFood')
 // log: Dog says bark
 ```
 
-##dispatcher.subscribeThrottled(eventName, handler [, context])
+## dispatcher.subscribeThrottled(eventName, handler [, context])
 Will execute `handler` once after at least one trigger of event `eventName`. `handler` will be executed latest event data, provided by `trigger` method,
 regardless how many times event `eventName` was triggered between two `requestAnimationFrame` occurances (about 16ms in ideal situation). Execution is
 done inside `requestAnimationFrame`. You would like to use this kind of subscription in some view, that subscribes to data, that
@@ -74,7 +74,7 @@ dispatcher.trigger('event', 200600)
 // After short timeout log: 'event triggered', 200600
 ```
 
-##dispatcher.subscribeWithPast(eventName, handler [, context])
+## dispatcher.subscribeWithPast(eventName, handler [, context])
 Works like '.on', but executes `handler` (with `this` equals optional `context`) if event `eventName` was already triggered
  
 ```
@@ -86,12 +86,12 @@ dispatcher.subscribeWithPast('event', function (eventData) {
 dispatcher.trigger('event', 'tuo'); // "tuo"
 ```
 
-##dispatcher.subscribeDebounced(eventName, handler [, context])
+## dispatcher.subscribeDebounced(eventName, handler [, context])
 Triggers `handler` with this equals optional `context`, if event `eventName` was already triggered,
 and continue triggering handler not more, than once in a `requestAnimationFrame` interval. 
 
 
-##dispatcher.trigger(eventName, data)
+## dispatcher.trigger(eventName, data)
 Triggers event `eventName` and passes `data` as argument to event handler.
 
 Plays nicely with handlers, that subscribed to latest triggered event and with '.when' method
@@ -106,7 +106,7 @@ dispatcher.trigger('eventName', 100500) // log: 100500
 // info: 100500
 ```
 
-##dispatcher.when(resolveImmediatelyIfAlreadyTriggered, eventName)
+## dispatcher.when(resolveImmediatelyIfAlreadyTriggered, eventName)
 Returns promise, that resolves when event `'eventName'` is triggered. You might want tot use this method for chaining events with
 `Promise.all` or for subscribing for event once. Plays nicely with throttled event executors, unexisting events and pasing data to event handlers.
 If optional boolean argument `resolveImmediatelyIfAlreadyTriggered` is `true`, resolves promise if event was triggered
@@ -121,7 +121,7 @@ If optional boolean argument `resolveImmediatelyIfAlreadyTriggered` is `true`, r
  dispatcher.trigger(true, 'eventName', 100500)
  ```
  
-##dispatcher.request(provisionName, args)
+## dispatcher.request(provisionName, args)
 Returns a promise, that resolves, with data from provider function. May pass arguments to provider function
 
 ```
@@ -134,7 +134,7 @@ dispatcher.request('userId').then(function (uid) {
 })
 ```
 
-##dispatcher.provide(provisionName, providerFunction)
+## dispatcher.provide(provisionName, providerFunction)
 Declares provider of some `provisionName` (a string - name of provided information). `providerFunction` should return 
 data of provision. 
 
