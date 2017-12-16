@@ -7,12 +7,14 @@
     "test": "test"
   },
   "dependencies": {
+    "uglify-js": "^2.8.29"
   },
   "devDependencies": {
     "jasmine-core": "^2.3.4",
-    "karma": "^0.12.31",
+    "karma": "^1.7.0",
     "karma-commonjs": "0.0.13",
-    "karma-coverage": "^0.3.1"
+    "karma-coverage": "^0.3.1",
+    "karma-jasmine": "^1.1.1"
   },
   "scripts": {
     "build": "uglifyjs -c -m --screw-ie8 ./lib/dispatcher.js > ./dist/dispatcher.min.js",
